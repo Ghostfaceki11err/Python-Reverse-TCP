@@ -77,7 +77,8 @@ def start_turtle():
 #display all current active connections with the client
 def list_connections():
     results = ""
-    for i, conn in enumerate(all_connections):
+    for i in range(len(all_connections)-1, -1, -1):
+        conn = all_connections[i]
         try:
             conn.send(str.encode(" "))
             conn.recv(20480)
@@ -85,7 +86,7 @@ def list_connections():
             del all_connections[i]
             del all_addresses[i]
             continue
-        results = str(i) + "  " + str(all_addresses[i][0]) + ":" + str(all_addresses[i][1]) + "\n"
+        results += str(i) + "  " + str(all_addresses[i][0]) + ":" + str(all_addresses[i][1]) + "\n"
     print("-----Clients-----" + "\n" + results)
     print("Total connections: " + str(len(all_connections)))
 #select a client
