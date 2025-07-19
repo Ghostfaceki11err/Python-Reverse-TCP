@@ -10,6 +10,13 @@ This repository contains my **Python TCP Reverse Shell** project — a work-in-p
 This project aims to implement a simple **reverse shell** over TCP using Python.  
 The server can handle **multiple clients** and allows remote command execution once a connection is established.
 
+## 🚧 Current Status
+
+- [x] Basic TCP connection
+- [x] Command execution
+- [x] Multi-client connection handling
+- [ ] Clean output formatting
+
 Planned Features:
 
 - Multi-client support
