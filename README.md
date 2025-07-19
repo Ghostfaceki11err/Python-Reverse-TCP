@@ -16,6 +16,9 @@ The server can handle **multiple clients** and allows remote command execution o
 - [x] Command execution
 - [x] Multi-client connection handling
 - [ ] Clean output formatting
+- [ ] Encrypted communication
+- [ ] Telegram Bot for C2
+- [ ] File upload/download functionality
 
 ## Planned Features:
 
