@@ -17,7 +17,7 @@ The server can handle **multiple clients** and allows remote command execution o
 - [x] Multi-client connection handling
 - [ ] Clean output formatting
 
-Planned Features:
+## Planned Features:
 
 - Multi-client support
 - Basic shell command execution
